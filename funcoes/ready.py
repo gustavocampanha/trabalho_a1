@@ -29,11 +29,14 @@ for word in soup.find_all('a'):
     if 'nameMusic' in str(word):
         music_names.append(word.get_text())
 
+music_names_backup = music_names[:]
+
 
 # Adicionando o nome do ábum na lista disk_names
 for word in soup.find_all('h3'):
     if 'albumTitle' in str(word):
         disk_names.append(word.get_text())
+
 
 
 # Adicionando a quantidade de músicas em cada album na lista qnt_music
@@ -43,6 +46,26 @@ for word in soup.find_all('div', class_='trackWrapper'):
     qnt = qnt[2:f-1]
     qnt = int(qnt)
     qnt_music.append(qnt)
+
+# Adicionando nome split de cada musica em uma lista
+for a in range(0, len(music_names)):
+
+    space = music_names[a].count(' ')
+    palavra = music_names[a].lower()
+    for a in range(0, space):
+        pos = palavra.find(' ')
+        adicionar = palavra[0:pos]
+        add = str(adicionar)
+        add = add.replace("'", '')
+        add = add.replace('(', '')
+        add = add.replace(')', '')
+        add = add.replace('.', '')
+        add = add.replace('/', '')
+        add = add.replace('\ ', '')
+        music_names_split.append(add)
+        palavra = palavra[pos+1:]
+        
+    music_names_split.append(palavra)
 
 
 # Adicionando nome split de cada album em uma lista
@@ -64,6 +87,7 @@ for a in range(0, len(disk_names)):
         
     disk_names_split.append(palavra)
 
+disk_names_split_backup = disk_names_split[:]
 
 link_music = list()
 link_padrao = 'https://www.vagalume.com.br'
@@ -83,7 +107,7 @@ for word in soup.find_all('div', class_='lineColLeft'):
 for a in range(0, len(disk_names)):
     dict_final[disk_names[a]] = dict()
 
-    words = disk_names[0].count(' ') + 1
+    words = disk_names[a].count(' ') + 1
     dict_final[disk_names[a]]['Nome Álbum Split:'] = disk_names_split[0:words]
     del disk_names_split[0:words]
 
@@ -107,6 +131,7 @@ for a in range(0, len(disk_names)):
                 add = str(palavra[0:pos])
 
             add = add.replace("'", '')
+            add = add.replace(",", '')
             add = add.replace('(', '')
             add = add.replace(')', '')
             add = add.replace('.', '')
@@ -157,4 +182,86 @@ for a in range(0, len(disk_names)):
 
     dict_final[disk_names[a]]['Letras Músicas:'] = letras_mus
 
-print(dict_final)
+#Primeira Pergunta
+pergunta2_1 = pd.value_counts(np.array(disk_names_split_backup))
+
+print(f'As 3 palavras mais comuns nos títulos dos álbuns são: "{pergunta2_1.index[0]}", aparecendo {pergunta2_1.values[0]} vez(es). "{pergunta2_1.index[1]}", aparecendo {pergunta2_1.values[1]} vez(es). "{pergunta2_1.index[2]}", aparecendo {pergunta2_1.values[2]} vez(es)')
+
+
+#Segunda Pergunta
+pergunta2_2 = pd.value_counts(np.array(music_names_split))
+
+print(f'As 3 palavras mais comuns nos títulos das músicas são: "{pergunta2_2.index[0]}", aparecendo {pergunta2_2.values[0]} vez(es). "{pergunta2_2.index[1]}", aparecendo {pergunta2_2.values[1]} vez(es). "{pergunta2_2.index[2]}", aparecendo {pergunta2_2.values[2]} vez(es)')
+
+#Terceira Pergunta
+list_letras_completa = list()
+for y in range(0, len(disk_names)):
+    list_letra = list()
+
+    letra = str()
+    
+    for w in range(0, qnt_music[y]):
+        letra += dict_final[disk_names[y]]['Letras Músicas:'][w]
+    letra += ' '
+
+    letra = letra.replace(',', '')
+    letra = letra.replace("'", '')
+    letra = letra.replace('(', '')
+    letra = letra.replace(')', '')
+    letra = letra.replace('.', '')
+    letra = letra.replace('/', '')
+    letra = letra.replace('?', '')
+    letra = letra.replace('!', '')
+
+    wordx = letra.count(' ') + 1
+    for t in range(0, wordx):
+        space = letra.find(' ')
+        add = letra[0:space]
+        if space < 1:
+            continue
+        letra = letra[space+1:]
+        list_letra.append(add)
+        list_letras_completa.append(add)    
+
+    pergunta2_3 = pd.value_counts(np.array(list_letra))
+
+    print(f'As 3 palavras mais comuns nas letras das músicas do álbum "{disk_names[y]}" são: "{pergunta2_3.index[0]}", aparecendo {pergunta2_3.values[0]} vez(es). "{pergunta2_3.index[1]}", aparecendo {pergunta2_3.values[1]} vez(es). "{pergunta2_3.index[2]}", aparecendo {pergunta2_3.values[2]} vez(es)')
+
+#Quarta Pergunta
+pergunta2_4 = pd.value_counts(np.array(list_letras_completa))
+
+print(f'As 3 palavras mais comuns nas letras das músicas de toda discografia são: "{pergunta2_4.index[0]}", aparecendo {pergunta2_4.values[0]} vez(es). "{pergunta2_4.index[1]}", aparecendo {pergunta2_4.values[1]} vez(es). "{pergunta2_4.index[2]}", aparecendo {pergunta2_4.values[2]} vez(es)')
+
+
+#Quinta Pergunta
+for y in range(0, len(disk_names)):
+    list_new = list()
+    x = dict_final[disk_names[y]]['Nome Álbum Split:']
+    
+    letra_musica = str(dict_final[disk_names[y]]['Letras Músicas:'])
+    letra_musica = letra_musica.replace(',', '')
+    letra_musica = letra_musica.replace("'", '')
+    letra_musica = letra_musica.replace('"', '')
+    letra_musica = letra_musica.replace('(', '')
+    letra_musica = letra_musica.replace(')', '')
+    letra_musica = letra_musica.replace('.', '')
+    letra_musica = letra_musica.replace('/', '')
+    letra_musica = letra_musica.replace('?', '')
+    letra_musica = letra_musica.replace('!', '')
+
+    for i in range(0, len(x)):
+        if x[i] in letra_musica:
+            list_new.append(x[i])
+            v = letra_musica.count(x[i])
+            list_new.append(v)
+        else:
+            continue
+
+    
+    word_list = letra_musica.split()
+    number_of_words = len(letra_musica)
+    print(f'Quantidade de vezes que as palavras do nome do álbum "{disk_names[y]}" apareceu(apareceram) nas letras das músicas: {list_new}, de {number_of_words} palavras')
+
+
+#Sexta Pergunta
+print(music_names_backup)
