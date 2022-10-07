@@ -22,3 +22,4 @@ funcoes.pergunta2_4(list_letras_completa)
 funcoes.pergunta2_5(disk_names, dict_final)
 #Pergunta 2.6
 funcoes.pergunta2_6(disk_names, dict_final)
+
