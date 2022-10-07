@@ -1,4 +1,3 @@
-from dis import dis
 import funcoes
 
 dict_final = funcoes.fun_dict_final()
@@ -12,14 +11,16 @@ list_letras_completa = funcoes.fun_list_letras_completa(disk_names, qnt_music, d
 
 #Pergunta 2.1
 funcoes.pergunta2_1(disk_names_split)
+funcoes.wcloud(disk_names_split,"img/pythonlogo.png", "pergunta2_1")
 #Pergunta 2.2
 funcoes.pergunta2_2(music_names_split)
+funcoes.wcloud(music_names_split,"img/brazil.png", "pergunta2_2")
 #Pergunta 2.3
 funcoes.pergunta2_3(disk_names, qnt_music, dict_final)
 #Pergunta 2.4
 funcoes.pergunta2_4(list_letras_completa)
+funcoes.wcloud(list_letras_completa,"img/fgvlogo.png", "pergunta2_4")
 #Pergunta 2.5
 funcoes.pergunta2_5(disk_names, dict_final)
 #Pergunta 2.6
 funcoes.pergunta2_6(disk_names, dict_final)
-
