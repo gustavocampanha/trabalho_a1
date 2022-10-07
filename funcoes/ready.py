@@ -4,16 +4,37 @@ from bs4 import BeautifulSoup
 import pandas as pd
 import numpy as np
 
-# Links
-link_discografia = 'https://www.vagalume.com.br/u2/discografia/'
+#Funcao para ajustar strings
+def ajuste_word(word):
+
+    word = str(word)
+    word = word.replace(',', '')
+    word = word.replace("'", '')
+    word = word.replace('"', '')
+    word = word.replace('(', '')
+    word = word.replace(')', '')
+    word = word.replace('.', '')
+    word = word.replace('/', '')
+    word = word.replace('?', '')
+    word = word.replace('!', '')
+
+    return word
+
+# Precisamos disso para termos a URL de cada música
+link_padrao = 'https://www.vagalume.com.br'
+link_discografia = link_padrao + '/u2/discografia/'
+
 
 #Criando listas necessárias
 music_names = list()
 disk_names = list()
 qnt_music = list()
-
 music_names_split = list()
 disk_names_split = list()
+music_names_backup = list()
+disk_names_split_backup = list()
+link_music = list()
+
 
 #Criando dicionário final
 dict_final = dict()
@@ -29,6 +50,8 @@ for word in soup.find_all('a'):
     if 'nameMusic' in str(word):
         music_names.append(word.get_text())
 
+
+#Fazendo um backup da lista music_names
 music_names_backup = music_names[:]
 
 
@@ -36,7 +59,6 @@ music_names_backup = music_names[:]
 for word in soup.find_all('h3'):
     if 'albumTitle' in str(word):
         disk_names.append(word.get_text())
-
 
 
 # Adicionando a quantidade de músicas em cada album na lista qnt_music
@@ -56,12 +78,8 @@ for a in range(0, len(music_names)):
         pos = palavra.find(' ')
         adicionar = palavra[0:pos]
         add = str(adicionar)
-        add = add.replace("'", '')
-        add = add.replace('(', '')
-        add = add.replace(')', '')
-        add = add.replace('.', '')
-        add = add.replace('/', '')
-        add = add.replace('\ ', '')
+        add = ajuste_word(add)
+
         music_names_split.append(add)
         palavra = palavra[pos+1:]
         
@@ -77,21 +95,18 @@ for a in range(0, len(disk_names)):
         pos = palavra.find(' ')
         adicionar = palavra[0:pos]
         add = str(adicionar)
-        add = add.replace("'", '')
-        add = add.replace('(', '')
-        add = add.replace(')', '')
-        add = add.replace('.', '')
-        add = add.replace('/', '')
+        add = ajuste_word(add)
         disk_names_split.append(add)
         palavra = palavra[pos+1:]
         
     disk_names_split.append(palavra)
 
+
+#Fazendo um backup da lista disk_names_split
 disk_names_split_backup = disk_names_split[:]
 
-link_music = list()
-link_padrao = 'https://www.vagalume.com.br'
 
+# Colocando os links das musicas em uma lista
 for word in soup.find_all('div', class_='lineColLeft'):
     secao = str(word)
     if 'href="' in secao:
@@ -105,24 +120,34 @@ for word in soup.find_all('div', class_='lineColLeft'):
 
 # Ajustando o dicionário
 for a in range(0, len(disk_names)):
+
+    #Gerando um dicionário para cada álbum
     dict_final[disk_names[a]] = dict()
 
+    #Checando quantas palavras tem no nome do álbum
     words = disk_names[a].count(' ') + 1
+
+    #Colocando no dicionário cada palavra presente no nome do álbum
     dict_final[disk_names[a]]['Nome Album Split:'] = disk_names_split[0:words]
     del disk_names_split[0:words]
 
-    list_music_names_fake = list()
+    #Checando quantas músicas esse álbum possui
     mus = qnt_music[a]
-    list_music_names_fake = music_names[:mus]
-    del music_names[:mus]
-    dict_final[disk_names[a]]['Musicas:'] = list_music_names_fake
 
+    #Colocando as musicas desse álbum em uma lista
+    list_music_names_now = list()
+    list_music_names_now = music_names[:mus]
+    del music_names[:mus]
+
+    #Adicionando as musicas de cada álbum no diionário
+    dict_final[disk_names[a]]['Musicas:'] = list_music_names_now
+
+    #Colocando as palavras do nome das musicas em uma lista para cada album
     list_music_names_split = list()
-    
-    for b in range(0, len(list_music_names_fake)):
+    for b in range(0, len(list_music_names_now)):
         
-        space = list_music_names_fake[b].count(' ')
-        palavra = list_music_names_fake[b].lower()
+        space = list_music_names_now[b].count(' ')
+        palavra = list_music_names_now[b].lower()
         for c in range(0, space+1):
             pos = palavra.find(' ')
             if pos == -1:
@@ -130,26 +155,24 @@ for a in range(0, len(disk_names)):
             else:
                 add = str(palavra[0:pos])
 
-            add = add.replace("'", '')
-            add = add.replace(",", '')
-            add = add.replace('(', '')
-            add = add.replace(')', '')
-            add = add.replace('.', '')
-            add = add.replace('/', '')
+            add = ajuste_word(add)
+            
             list_music_names_split.append(add)
             palavra = palavra[pos+1:]
 
-    
+    #Adicionando as palavras dos nomes das músicas no dicionário de cada álbum
     dict_final[disk_names[a]]['Nome Musicas Split:'] = list_music_names_split
+    #Adicionando a quantidade de musicas de cada álbum no dicionario 
     dict_final[disk_names[a]]['Quantidade de Musicas'] = qnt_music[a]
     
     links = list()
     links = link_music[0:mus]
     del link_music[0:mus]
 
+    #Adicionando as URLs de cada música no dicionário do álbum
     dict_final[disk_names[a]]['Links Musicas'] = links
 
-
+    
     letras_mus = list()
     for d in range(0, len(links)):
         
@@ -184,13 +207,11 @@ for a in range(0, len(disk_names)):
 
 #Primeira Pergunta
 pergunta2_1 = pd.value_counts(np.array(disk_names_split_backup))
-
 print(f'As 3 palavras mais comuns nos títulos dos álbuns são: "{pergunta2_1.index[0]}", aparecendo {pergunta2_1.values[0]} vez(es). "{pergunta2_1.index[1]}", aparecendo {pergunta2_1.values[1]} vez(es). "{pergunta2_1.index[2]}", aparecendo {pergunta2_1.values[2]} vez(es)')
 
 
 #Segunda Pergunta
 pergunta2_2 = pd.value_counts(np.array(music_names_split))
-
 print(f'As 3 palavras mais comuns nos títulos das músicas são: "{pergunta2_2.index[0]}", aparecendo {pergunta2_2.values[0]} vez(es). "{pergunta2_2.index[1]}", aparecendo {pergunta2_2.values[1]} vez(es). "{pergunta2_2.index[2]}", aparecendo {pergunta2_2.values[2]} vez(es)')
 
 #Terceira Pergunta
@@ -204,14 +225,7 @@ for y in range(0, len(disk_names)):
         letra += dict_final[disk_names[y]]['Letras Musicas:'][w]
     letra += ' '
 
-    letra = letra.replace(',', '')
-    letra = letra.replace("'", '')
-    letra = letra.replace('(', '')
-    letra = letra.replace(')', '')
-    letra = letra.replace('.', '')
-    letra = letra.replace('/', '')
-    letra = letra.replace('?', '')
-    letra = letra.replace('!', '')
+    letra = ajuste_word(letra)
 
     wordx = letra.count(' ') + 1
     for t in range(0, wordx):
@@ -239,15 +253,7 @@ for y in range(0, len(disk_names)):
     x = dict_final[disk_names[y]]['Nome Album Split:']
     
     letra_musica = str(dict_final[disk_names[y]]['Letras Musicas:'])
-    letra_musica = letra_musica.replace(',', '')
-    letra_musica = letra_musica.replace("'", '')
-    letra_musica = letra_musica.replace('"', '')
-    letra_musica = letra_musica.replace('(', '')
-    letra_musica = letra_musica.replace(')', '')
-    letra_musica = letra_musica.replace('.', '')
-    letra_musica = letra_musica.replace('/', '')
-    letra_musica = letra_musica.replace('?', '')
-    letra_musica = letra_musica.replace('!', '')
+    letra_musica = ajuste_word(letra_musica)
 
     for i in range(0, len(x)):
         if x[i] in letra_musica:
@@ -272,15 +278,7 @@ for p in range(0, len(disk_names)):
         lista_split_indv = list()
         letra_musica = str(dict_final[disk_names[p]]['Letras Musicas:'][y])
         
-        letra_musica = letra_musica.replace(',', '')
-        letra_musica = letra_musica.replace("'", '')
-        letra_musica = letra_musica.replace('"', '')
-        letra_musica = letra_musica.replace('(', '')
-        letra_musica = letra_musica.replace(')', '')
-        letra_musica = letra_musica.replace('.', '')
-        letra_musica = letra_musica.replace('/', '')
-        letra_musica = letra_musica.replace('?', '')
-        letra_musica = letra_musica.replace('!', '')
+        letra_musica = ajuste_word(letra_musica)
 
         space = nome_musicas[y].count(' ')
         palavra = nome_musicas[y].lower()
@@ -288,22 +286,12 @@ for p in range(0, len(disk_names)):
             pos = palavra.find(' ')
             adicionar = palavra[0:pos]
             add = str(adicionar)
-            add = add.replace("'", '')
-            add = add.replace('(', '')
-            add = add.replace(')', '')
-            add = add.replace('.', '')
-            add = add.replace('/', '')
-            add = add.replace('\ ', '')
+            add = ajuste_word(add)
             lista_split_indv.append(add)
             palavra = palavra[pos+1:]
 
         palavra = str(palavra)
-        palavra = palavra.replace("'", '')
-        palavra = palavra.replace('(', '')
-        palavra = palavra.replace(')', '')
-        palavra = palavra.replace('.', '')
-        palavra = palavra.replace('/', '')
-        palavra = palavra.replace('\ ', '')
+        palavra = ajuste_word(palavra)
         
         lista_split_indv.append(palavra)
         print(lista_split_indv)
