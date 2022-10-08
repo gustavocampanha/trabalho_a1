@@ -1,7 +1,7 @@
 # Importando as bibliotecas
 import pandas as pd
 import numpy as np
-from funcoes.extract import fun_disk_names_split, fun_music_names_split, fun_disk_names, fun_qnt_music, fun_dict_final, fun_ajuste_word  
+from .extract import fun_disk_names_split, fun_music_names_split, fun_disk_names, fun_qnt_music, fun_dict_final, fun_ajuste_word  
 #Primeira Pergunta
 def pergunta2_1(disk_names_split):
     pergunta2_1 = pd.value_counts(np.array(disk_names_split))
