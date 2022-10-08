@@ -14,7 +14,7 @@ def plt_pergunta_4_mais_longas(df_rank):
                         errorbar=("pi", 0), width=0.5)
     plot.set( xlabel='Duração', ylabel='Música', title='Top 5 Mais Longas')
     plt.rcParams.update({'figure.autolayout': True})
-    plt.savefig('./respostas/pergunta4_a.png') 
+    plt.savefig('./respostas/pergunta1_4_a.png') 
     # plt.show()
 
 def plt_pergunta_4_menos_longas(df_rank):
